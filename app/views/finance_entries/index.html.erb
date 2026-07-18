@@ -1,0 +1,33 @@
+<% html_title t("finances.label_finance_entries") %>
+
+<%=
+  render(Primer::OpenProject::PageHeader.new) do |header|
+    header.with_title { t("finances.label_finance_entries") }
+    header.with_breadcrumbs(
+      [
+        { href: project_path(@project), text: @project.name },
+        t("finances.label_finance_entries")
+      ]
+    )
+  end
+%>
+
+<%=
+  render(
+    Finances::SubHeaderComponent.new(
+      query: @query,
+      project: @project,
+      params:
+    )
+  )
+%>
+
+<%=
+  render(
+    Finances::ResultsComponent.new(
+      entries: @finance_entries,
+      totals: @totals,
+      project: @project
+    )
+  )
+%>

@@ -1,0 +1,49 @@
+<%=
+  render(
+    Primer::Alpha::Dialog.new(
+      id: "finance-entry-history-dialog",
+      title: t("finances.label_history"),
+      size: :large
+    )
+  ) do |dialog|
+    dialog.with_body do
+      if journals.empty?
+        render(Primer::Beta::Blankslate.new) do |blankslate|
+          blankslate.with_visual_icon(icon: :history)
+          blankslate.with_heading(tag: :h2).with_content(t("finances.label_no_history"))
+        end
+      else
+        render(Primer::Beta::BorderBox.new) do |box|
+          journals.each do |journal|
+            box.with_row do
+              concat content_tag(:div, class: "d-flex flex-justify-between mb-1") {
+                safe_join(
+                  [
+                    helpers.link_to_user(journal.user),
+                    content_tag(:span, helpers.format_time(journal.created_at), class: "color-fg-muted")
+                  ]
+                )
+              }
+
+              details = journal.details.except("cause")
+              if details.present?
+                concat content_tag(:ul, class: "mb-0") {
+                  safe_join(
+                    details.filter_map do |key, _change|
+                      rendered = journal.render_detail(key)
+                      next if rendered.blank?
+
+                      content_tag(:li, rendered)
+                    end
+                  )
+                }
+              else
+                concat content_tag(:p, t("finances.messages.journal_created"), class: "color-fg-muted mb-0")
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+%>

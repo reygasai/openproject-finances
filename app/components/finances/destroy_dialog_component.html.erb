@@ -1,0 +1,32 @@
+<%=
+  render(
+    Primer::Alpha::Dialog.new(
+      id: "finance-entry-destroy-dialog",
+      title: t("finances.label_delete_finance_entry"),
+      size: :medium
+    )
+  ) do |dialog|
+    dialog.with_body do
+      concat content_tag(:p, t("finances.messages.confirm_delete"))
+      concat content_tag(
+        :p,
+        "#{helpers.format_date(entry.entry_date)} · #{entry.amount} #{entry.currency}",
+        class: "text-bold"
+      )
+    end
+
+    dialog.with_footer do
+      concat render(Primer::Beta::Button.new(data: { "close-dialog-id": "finance-entry-destroy-dialog" })) {
+        t(:button_cancel)
+      }
+      concat primer_form_with(
+        model: entry,
+        url: helpers.finance_entry_path(entry),
+        method: :delete,
+        data: { turbo: true }
+      ) { |f|
+        render(Primer::Beta::Button.new(scheme: :danger, type: :submit)) { t(:button_delete) }
+      }
+    end
+  end
+%>

@@ -1,0 +1,105 @@
+<%= component_wrapper do %>
+  <%=
+    render(Primer::OpenProject::SubHeader.new(collapsed_search: false, data: sub_header_data_attributes)) do |subheader|
+      subheader.with_quick_filter do
+        render(Finances::EntryTypeFilterComponent.new(query: @query, project: @project))
+      end
+
+      subheader.with_quick_sort do
+        render(Primer::Alpha::ActionMenu.new(anchor_align: :start)) do |menu|
+          menu.with_show_button(
+            scheme: :invisible,
+            trailing_icon: :"triangle-down",
+            aria: { label: t("finances.label_sort") }
+          ) do |button|
+            button.with_leading_visual_icon(icon: :"arrow-down")
+            sort_newest_first? ? t("finances.label_sort_newest_first") : t("finances.label_sort_oldest_first")
+          end
+
+          menu.with_item(
+            label: t("finances.label_sort_newest_first"),
+            tag: :a,
+            href: sort_path(:desc),
+            active: sort_newest_first?,
+            content_arguments: { data: { turbo_stream: true } }
+          ) do |item|
+            item.with_leading_visual_icon(icon: :"arrow-down")
+          end
+
+          menu.with_item(
+            label: t("finances.label_sort_oldest_first"),
+            tag: :a,
+            href: sort_path(:asc),
+            active: !sort_newest_first?,
+            content_arguments: { data: { turbo_stream: true } }
+          ) do |item|
+            item.with_leading_visual_icon(icon: :"arrow-up")
+          end
+        end
+      end
+
+      subheader.with_filter_input(
+        name: :description,
+        label: FinanceEntry.human_attribute_name(:description),
+        value: filter_input_value,
+        placeholder: t("finances.subheader.filter_placeholder"),
+        leading_visual: { icon: :search, size: :small },
+        clear_button_id:,
+        data: filter_input_data_attributes
+      )
+
+      subheader.with_action_menu(
+        leading_icon: :download,
+        trailing_icon: :"triangle-down",
+        label: t("finances.label_export"),
+        anchor_align: :end,
+        button_arguments: {
+          scheme: :secondary,
+          aria: { label: t("finances.label_export") }
+        }
+      ) do |menu|
+        menu.with_item(
+          label: t("finances.label_export_csv"),
+          tag: :a,
+          href: export_path(format: :csv),
+          content_arguments: { data: { turbo: false } }
+        ) do |item|
+          item.with_leading_visual_icon(icon: :download)
+        end
+
+        menu.with_item(
+          label: t("finances.label_export_xls"),
+          tag: :a,
+          href: export_path(format: :xls),
+          content_arguments: { data: { turbo: false } }
+        ) do |item|
+          item.with_leading_visual_icon(icon: :download)
+        end
+      end
+
+      if can_create?
+        subheader.with_action_button(
+          scheme: :primary,
+          leading_icon: :plus,
+          label: t("finances.label_new_finance_entry"),
+          tag: :a,
+          href: new_project_finance_entry_path(@project),
+          data: { turbo_stream: true }
+        ) do
+          t("finances.label_new_finance_entry")
+        end
+      end
+
+      subheader.with_bottom_pane_component do
+        render(
+          Finances::FiltersComponent.new(
+            query: @query,
+            project: @project,
+            lazy_loaded_path: :project_finance_entries_filters_path,
+            initially_expanded: filters_expanded?
+          )
+        )
+      end
+    end
+  %>
+<% end %>
